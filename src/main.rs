@@ -77,7 +77,7 @@ async fn main() -> web3::Result<()> {
     };
 
     let mut golem = golem::GolemToken::new(&network_url);
-    golem.initialize_accounts().await?;
+    golem.initialize().await?;
 
     let golem_arc = Arc::new(golem);
     let golem_for_tasks = golem_arc.clone();
