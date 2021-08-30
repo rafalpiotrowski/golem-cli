@@ -3,6 +3,16 @@
         "to":"0x5b15717b37bE2E1048fDcD317eC822CfD2842Fe4",
         "method_name":"transfer",
         "value":1
+    },{
+        "from":"0xFf706D888f93D5f130DE3E8Fed4647fe28Ff5C6E",
+        "to":"0x5b15717b37bE2E1048fDcD317eC822CfD2842Fe4",
+        "method_name":"totalSupply",
+        "value":1
+    },{
+        "from":"0xFf706D888f93D5f130DE3E8Fed4647fe28Ff5C6E",
+        "to":"0x5b15717b37bE2E1048fDcD317eC822CfD2842Fe4",
+        "method_name":"transferFrom",
+        "value":1
     }, {
         "from":"0x5b15717b37bE2E1048fDcD317eC822CfD2842Fe4",
         "to":"0xFf706D888f93D5f130DE3E8Fed4647fe28Ff5C6E",

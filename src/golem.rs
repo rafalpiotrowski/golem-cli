@@ -16,12 +16,12 @@ pub struct Account {
 }
 
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Operation {
-    pub from: web3::types::Address,
-    pub to: web3::types::Address,
+    pub from: Option<web3::types::Address>,
+    pub to: Option<web3::types::Address>,
     pub method_name: String,
-    pub value: usize,
+    pub value: Option<u64>,
 }
 
 impl GolemToken {
@@ -71,6 +71,15 @@ impl GolemToken {
             let balance = self.network.eth().balance(account.1.address, None).await?;
             println!("Balance of {:?}: {}", account.1.address, balance);
         }    
+        Ok(())
+    }
+
+    pub async fn execute(&self, operation: Operation) -> web3::error::Result {
+        let mut rng = rand::thread_rng();
+        let x = rand::Rng::gen_range(&mut rng, 0..10);
+        println!("exeuting: {:?} - will continue in {}", operation, x);
+        std::thread::sleep(std::time::Duration::from_secs(x));
+        println!("exeuting: {:?} -- COMPLETED", operation);
         Ok(())
     }
 }

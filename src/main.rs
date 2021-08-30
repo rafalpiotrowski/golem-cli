@@ -4,6 +4,7 @@ use std::env;
 use std::str::FromStr;
 use dotenv::dotenv;
 use clap::{App, Arg};
+use golem::GolemToken;
 
 pub mod golem;
 
@@ -18,6 +19,7 @@ async fn main() -> web3::Result<()> {
 
     let mut network_url: String = "127.0.0.1:8545".to_string();
     let mut balance_refresh_period = Duration::from_secs(5);
+    let mut operations: Vec<golem::Operation> = vec!();
     
     let matches = App::new("golem-cli")
         .version("0.1")
@@ -69,7 +71,7 @@ async fn main() -> web3::Result<()> {
     match matches.value_of("operations").unwrap() {
         path => {
             let file = std::fs::File::open(path.to_string()).expect("file should open read only");
-            let operations: Vec<golem::Operation> = serde_json::from_reader(file).expect("file should be proper JSON");
+            operations = serde_json::from_reader(file).expect("file should be proper JSON");
             println!("operations: {:?}", operations);
         }
     };
@@ -77,7 +79,8 @@ async fn main() -> web3::Result<()> {
     let mut golem = golem::GolemToken::new(&network_url);
     golem.initialize_accounts().await?;
 
-    let golem_for_tasks = Arc::new(golem).clone();
+    let golem_arc = Arc::new(golem);
+    let golem_for_tasks = golem_arc.clone();
 
     //display accounts balances
     let h = tokio::spawn(async move {
@@ -87,10 +90,20 @@ async fn main() -> web3::Result<()> {
         }
     });
 
+    // note the use of `into_iter()` to consume `items`
+    let tasks: Vec<_> = operations.into_iter().map(|item| {
+            let golem_for_tasks = golem_arc.clone();
+            tokio::spawn(async move {
+                golem_for_tasks.execute(item).await.unwrap();
+            })
+        })
+        .collect();
+
     let _t1 = match h.await {
         Ok(_) => println!("balance completed"),
         Err(e) => println!("balance failed: {:?}", e)
     };
+
 
     Ok(())
 }
