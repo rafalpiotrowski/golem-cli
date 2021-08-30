@@ -1,8 +1,10 @@
 use std::str::FromStr;
 use std::{collections::HashMap, env};
 use secp256k1::SecretKey;
+use serde::Deserialize;
 
 pub struct GolemToken {
+    pub address: web3::types::Address,
     pub network: web3::Web3<web3::transports::Http>,
     pub accounts: HashMap<&'static str, Account>
 }
@@ -13,9 +15,22 @@ pub struct Account {
     pub pk: SecretKey
 }
 
+
+#[derive(Deserialize, Debug)]
+pub struct Operation {
+    pub from: web3::types::Address,
+    pub to: web3::types::Address,
+    pub method_name: String,
+    pub value: usize,
+}
+
 impl GolemToken {
     pub fn new(network_url: &str) -> Self {
         GolemToken {
+            address: {
+                let value = env::var("CONTRACT_ADDRESS").expect("CONTRACT_ADDRESS is not set");
+                value.parse::<web3::types::Address>().unwrap()
+            },
             network : {
                 let transport = web3::transports::Http::new(network_url).unwrap();
                 web3::Web3::new(transport)

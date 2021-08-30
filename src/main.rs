@@ -32,6 +32,14 @@ async fn main() -> web3::Result<()> {
                 .takes_value(true),
         )
         .arg(
+            Arg::with_name("operations")
+                .short("o")
+                .long("operations")
+                .value_name("path to operations.json file")
+                .help("path to operations file")
+                .takes_value(true),
+        )
+        .arg(
             Arg::with_name("balance")
                 .short("b")
                 .long("balance")
@@ -58,6 +66,14 @@ async fn main() -> web3::Result<()> {
         x => balance_refresh_period = Duration::from_secs(u64::from_str(x).unwrap())
     };
 
+    match matches.value_of("operations").unwrap() {
+        path => {
+            let file = std::fs::File::open(path.to_string()).expect("file should open read only");
+            let operations: Vec<golem::Operation> = serde_json::from_reader(file).expect("file should be proper JSON");
+            println!("operations: {:?}", operations);
+        }
+    };
+
     let mut golem = golem::GolemToken::new(&network_url);
     golem.initialize_accounts().await?;
 
@@ -65,7 +81,10 @@ async fn main() -> web3::Result<()> {
 
     //display accounts balances
     let h = tokio::spawn(async move {
-        golem_for_tasks.print_balances().await.unwrap();
+        loop {
+            golem_for_tasks.print_balances().await.unwrap();
+            std::thread::sleep(balance_refresh_period);
+        }
     });
 
     let _t1 = match h.await {
