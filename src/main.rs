@@ -86,7 +86,7 @@ async fn main() -> web3::Result<()> {
     let h = tokio::spawn(async move {
         loop {
             golem_for_tasks.print_balances().await.unwrap();
-            std::thread::sleep(balance_refresh_period);
+            tokio::time::sleep(balance_refresh_period).await;
         }
     });
 
